@@ -39,6 +39,7 @@ parser.add_argument("--threshold", type=float, default=0.12, help="Threshold for
 parser.add_argument("--use_bgs", action="store_true", help="Use background subtraction to assist segmentation")
 parser.add_argument("--no_back_tracking", action="store_true", help="Do not use back tracking for segmentation")
 parser.add_argument("--momentum", type=float, default=0, help="Momentum for optical flow")
+parser.add_argument("--no_mean_sub", action="store_true", help="Do not use mean subtraction for optical flow")
 args = parser.parse_args()
 
 video_name = args.video_name
@@ -138,8 +139,9 @@ for idx in tqdm(range(0, len(input_images) - 1)):
     dx = magnitude * np.cos(angle)
     dy = magnitude * np.sin(angle)
 
-    dx = dx - dx.mean()
-    dy = dy - dy.mean()
+    if not args.no_mean_sub:
+        dx = dx - dx.mean()
+        dy = dy - dy.mean()
     if running_dx is None:
         running_dx = dx
         running_dy = dy

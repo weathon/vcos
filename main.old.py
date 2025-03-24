@@ -2,7 +2,6 @@
 from skimage import data, img_as_float
 bp = breakpoint
 import sys
-sys.path.append("../")
 import os
 import cv2
 # if too far away from mask do not accpt

@@ -48,10 +48,24 @@ log_path = args.log_path
 processor = Owlv2Processor.from_pretrained("google/owlv2-base-patch16-ensemble")
 model = Owlv2ForObjectDetection.from_pretrained("google/owlv2-base-patch16-ensemble").to("cuda")
 
-flow_dir = "/home/wg25r/fastdata/fullmoca/FlowImages_gap1/"
-img_dir = "/home/wg25r/fastdata/fullmoca/MoCA-Video-Test/"
+try:
+  import google.colab
+  IN_COLAB = True
+except:
+  IN_COLAB = False
+  
+if IN_COLAB:
+    flow_dir = "./fullmoca/FlowImages_gap1/"
+    img_dir = "./fullmoca/MoCA-Video-Test/"
+    sam2_checkpoint = ".sam2/checkpoints/sam2.1_hiera_small.pt"
+    
+else:
+    flow_dir = "/home/wg25r/fastdata/fullmoca/FlowImages_gap1/"
+    img_dir = "/home/wg25r/fastdata/fullmoca/MoCA-Video-Test/"
+    sam2_checkpoint = "../../grounded_mog/.sam2/checkpoints/sam2.1_hiera_small.pt"
+    
 # use points not box, because box could not encapsulate the whole object
-sam2_checkpoint = "../../grounded_mog/.sam2/checkpoints/sam2.1_hiera_small.pt"
+
 model_cfg = "configs/sam2.1/sam2.1_hiera_s.yaml"
 from sam2.build_sam import build_sam2_video_predictor
 predictor = build_sam2_video_predictor(model_cfg, sam2_checkpoint, device="cuda")

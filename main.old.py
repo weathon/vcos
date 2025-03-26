@@ -40,6 +40,7 @@ parser.add_argument("--use_bgs", action="store_true", help="Use background subtr
 parser.add_argument("--no_back_tracking", action="store_true", help="Do not use back tracking for segmentation")
 parser.add_argument("--momentum", type=float, default=0, help="Momentum for optical flow")
 parser.add_argument("--no_mean_sub", action="store_true", help="Do not use mean subtraction for optical flow")
+parser.add_argument("--no_negative_prompt", action="store_true", help="Do not use negative prompt for VLM")
 args = parser.parse_args()
 
 video_name = args.video_name
@@ -189,7 +190,10 @@ for idx in tqdm(range(0, len(input_images) - 1)):
     blended_images.append(input_image) # try both
 
     image = Image.fromarray(blended)
-    text_labels = [[args.positive_prompt, "background", "logo or sign", "plant"]] # add more negative prompts
+    if args.no_negative_prompt:
+      text_labels = [[args.positive_prompt]]
+    else:
+      text_labels = [[args.positive_prompt, "background", "logo or sign", "plant"]] # add more negative prompts
     inputs = processor(text=text_labels, images=image, return_tensors="pt").to("cuda")
     with torch.no_grad():
         outputs = model(**inputs)

@@ -41,6 +41,7 @@ parser.add_argument("--no_back_tracking", action="store_true", help="Do not use 
 parser.add_argument("--momentum", type=float, default=0, help="Momentum for optical flow")
 parser.add_argument("--no_mean_sub", action="store_true", help="Do not use mean subtraction for optical flow")
 parser.add_argument("--no_negative_prompt", action="store_true", help="Do not use negative prompt for VLM")
+parser.add_argument("--box_only", action="store_true", help="Only use box as prompt for SAM2")
 args = parser.parse_args()
 
 video_name = args.video_name
@@ -243,20 +244,20 @@ for i, blended in enumerate(blended_images):
 inference_state = predictor.init_state(video_path="output")
 predictor.reset_state(inference_state)
 
-
-for idx in points.keys():
-    ann_frame_idx = idx
-    point = points[idx]
-    if len(point) > 0:
-        pointi = np.array([point], dtype=np.float32)
-        labels = np.array([1], np.int32)
-        _, out_obj_ids, out_mask_logits = predictor.add_new_points_or_box(
-            inference_state=inference_state,
-            frame_idx=ann_frame_idx,
-            obj_id=1,
-            points=pointi,
-            labels=labels,
-        )
+if not args.box_only:
+  for idx in points.keys():
+      ann_frame_idx = idx
+      point = points[idx]
+      if len(point) > 0:
+          pointi = np.array([point], dtype=np.float32)
+          labels = np.array([1], np.int32)
+          _, out_obj_ids, out_mask_logits = predictor.add_new_points_or_box(
+              inference_state=inference_state,
+              frame_idx=ann_frame_idx,
+              obj_id=1,
+              points=pointi,
+              labels=labels,
+          )
     
 for idx in history_boxes.keys():
     ann_frame_idx = idx
@@ -317,21 +318,21 @@ for idx in history_boxes.keys():
     
 
 
-
-for idx in points.keys():
-    # ann_frame_idx = len(frames) - idx - 1 frame is the file name
-    ann_frame_idx = len(frame_images) - idx - 1 
-    point = points[idx]
-    if len(point) > 0:
-        pointi = np.array([point], dtype=np.float32)
-        labels = np.array([1], np.int32)
-        _, out_obj_ids, out_mask_logits = predictor.add_new_points_or_box(
-            inference_state=inference_state,
-            frame_idx=ann_frame_idx,
-            obj_id=1,
-            points=pointi,
-            labels=labels,
-        )
+if not args.box_only:
+  for idx in points.keys():
+      # ann_frame_idx = len(frames) - idx - 1 frame is the file name
+      ann_frame_idx = len(frame_images) - idx - 1 
+      point = points[idx]
+      if len(point) > 0:
+          pointi = np.array([point], dtype=np.float32)
+          labels = np.array([1], np.int32)
+          _, out_obj_ids, out_mask_logits = predictor.add_new_points_or_box(
+              inference_state=inference_state,
+              frame_idx=ann_frame_idx,
+              obj_id=1,
+              points=pointi,
+              labels=labels,
+          )
     
 for idx in history_boxes.keys():
     ann_frame_idx = len(frame_images) - idx - 1 

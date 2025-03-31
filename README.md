@@ -55,6 +55,7 @@ If installation fails, run:
 ```bash
 echo -e '[build-system]\nrequires = [\n    "setuptools>=62.3.0,<75.9",\n    "torch>=2.5.1",\n    ]\nbuild-backend = "setuptools.build_meta"' > pyproject.toml
 ```
+(See https://github.com/facebookresearch/sam2/issues/611 for more)
 Then run:
 ```bash
 pip3 install -e .

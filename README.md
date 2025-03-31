@@ -29,6 +29,66 @@
 | Shikra + SAM2-L                      | arXiv 24  | ZS w/ PK     | 0.495        | 0.132           | 0.107 |
 | Ours                                 | -         | ZS w/ PK     | **0.776**    | **0.628**       | **0.008** |
 
+## Setup Instructions
+
+### Step 1: Download MoCA-Mask with Precomputed Optical Flow
+```bash
+wget https://zs-vcos.weasoft.com/FMOCA.zip
+```
+If the server is down, download from Google Drive. 
+
+Verify file integrity with SHA-512:
+```
+eda88bd52daf0b44e20d5c1c545c3f3759e5368c6101a594396f4b1acf3034f812ee7aa19b3eca9203232aa0af922a2d252feec79914b125ccb2d52cf94829cf
+```
+
+### Step 2: Download and Install SAM-2
+```bash
+git clone https://github.com/facebookresearch/sam2.git
+mv sam2 .sam2
+cd .sam2
+pip3 install -e .
+```
+
+If installation fails, run:
+```bash
+echo -e '[build-system]\nrequires = [\n    "setuptools>=62.3.0,<75.9",\n    "torch>=2.5.1",\n    ]\nbuild-backend = "setuptools.build_meta"' > pyproject.toml
+```
+Then run:
+```bash
+pip3 install -e .
+```
+
+Download the checkpoints:
+```bash
+cd checkpoints
+bash download_ckpts.sh
+```
+
+More details: https://github.com/facebookresearch/sam2
+
+### Step 3: Configure and Run
+
+Modify `run.py` to include the following runtime arguments:
+
+- `--video_name`: name of the input video (required)
+- `--log_path`: log file output path (default: `output.log`)
+- `--use_motion_detection`: enable motion detection support
+- `--output_dir`: output directory for processed video (default: `output`)
+- `--positive_prompt`: prompt to guide object detection (default: "an animal or insect being highlighted in blue")
+- `--threshold`: object detection confidence threshold (default: `0.12`)
+- `--use_bgs`: enable background subtraction
+- `--no_back_tracking`: enable forward-only tracking
+- `--momentum`: set optical flow momentum (default: `0`)
+- `--no_mean_sub`: disable mean subtraction in optical flow
+- `--no_negative_prompt`: disable negative prompts in VLM
+- `--box_only`: use only box prompts for SAM2
+
+### Step 4: Evaluation
+
+Open `eval/main_MoCa.m`, update the file paths to match your local setup, and run the script using MATLAB.
+
+For questions, contact: wg25r@student.ubc.ca
 
 ## Testing Visualizations
 

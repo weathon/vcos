@@ -1,5 +1,5 @@
 # ZS-VCOS: Zero-Shot Outperforms Supervised Video Camouflaged Object Segmentation with Zero-Shot Method
-
+[![PWC](https://img.shields.io/endpoint.svg?url=https://paperswithcode.com/badge/zs-vcos-zero-shot-outperforms-supervised/camouflaged-object-segmentation-on-moca-mask)](https://paperswithcode.com/sota/camouflaged-object-segmentation-on-moca-mask?p=zs-vcos-zero-shot-outperforms-supervised)
 ## Leaderboard
 ![leaderboard](leaderboard.png)
 

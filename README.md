@@ -35,7 +35,8 @@
 ```bash
 wget https://zs-vcos.weasoft.com/FMOCA.zip
 ```
-If the server is down, download from Google Drive. 
+If the server is down, download from Google Drive.
+https://drive.google.com/file/d/10D-K2jXZ96BeznXuYcHwom90g6cp_L6Q/view?usp=sharing
 
 Verify file integrity with SHA-512:
 ```

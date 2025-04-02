@@ -32,6 +32,7 @@ Camouflaged object segmentation presents unique challenges compared to tradition
 | Shikra + SAM2-L                      | arXiv 24  | ZS w/ PK     | 0.495        | 0.132           | 0.107 |
 | Ours                                 | -         | ZS w/ PK     | **0.776**    | **0.628**       | **0.008** |
 
+**Warning: Different methods of calculating IoU can produce inconsistent results. Previous work lacked a standardized evaluation approach, so we did not report IoU for cross-method comparison. For internal comparisons among our methods, we used the SLT-Net evaluation code, which computes IoU per frame, averages across each video, and then averages over the entire dataset.**
 ## Setup Instructions
 
 ### Step 1: Download MoCA-Mask with Precomputed Optical Flow

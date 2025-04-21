@@ -248,7 +248,7 @@ for i, blended in enumerate(blended_images):
 n = 3
 highest_conf_idxs = []
 
-highest_conf_idxs = np.argsort(box_conf)[::-1][:n]
+highest_conf_idxs = np.argsort(box_conf.cpu())[::-1][:n]
 
 boxes = boxes[highest_conf_idxs]
 points = points[highest_conf_idxs]

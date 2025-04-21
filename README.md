@@ -1,5 +1,10 @@
-# ZS-VCOS: Zero-Shot Outperforms Supervised Video Camouflaged Object Segmentation with Zero-Shot Method
+# ZS-VCOS: Zero-Shot Outperforms Supervised Video Camouflaged Object Segmentation
+[![PWC](https://img.shields.io/endpoint.svg?url=https://paperswithcode.com/badge/zs-vcos-zero-shot-outperforms-supervised/camouflaged-object-segmentation-on-moca-mask)](https://paperswithcode.com/sota/camouflaged-object-segmentation-on-moca-mask?p=zs-vcos-zero-shot-outperforms-supervised) 
 
+[Preprint](https://www.researchgate.net/publication/390322532_ZS-VCOS_Zero-Shot_Outperforms_Supervised_Video_Camouflaged_Object_Segmentation)
+
+
+Camouflaged object segmentation presents unique challenges compared to traditional segmentation tasks, primarily due to the high similarity in patterns and colors between camouflaged objects and their backgrounds. Effective solutions to this problem have significant implications in critical areas such as pest control, defect detection, and lesion segmentation in medical imaging. Prior research has predominantly emphasized supervised or unsupervised pre-training methods, leaving zero-shot approaches significantly underdeveloped. Existing zero-shot techniques commonly utilize the Segment Anything Model (SAM) in automatic mode or rely on vision-language models to generate cues for segmentation; however, their performances remain unsatisfactory, likely due to the similarity of the camouflaged object and the background. Optical flow, commonly utilized for detecting moving objects, has demonstrated effectiveness even with camouflaged entities. Our method integrates optical flow, a vision-language model, and SAM 2 into a sequential pipeline. Evaluated on the MoCA-Mask dataset, our approach achieves outstanding performance improvements, significantly outperforming existing zero-shot methods by raising the F-measure ($F_\beta^w$) from 0.296 to 0.628. Remarkably, our approach also surpasses supervised methods, increasing the F-measure from 0.476 to 0.628. Additionally, evaluation on the MoCA-Filter dataset demonstrates an increase in the success rate from 0.628 to 0.697 when compared with FlowSAM, a supervised transfer method. A thorough ablation study further validates the individual contributions of each component. More details can be found on https://github.com/weathon/vcos.
 ## Leaderboard
 ![leaderboard](leaderboard.png)
 
@@ -29,6 +34,69 @@
 | Shikra + SAM2-L                      | arXiv 24  | ZS w/ PK     | 0.495        | 0.132           | 0.107 |
 | Ours                                 | -         | ZS w/ PK     | **0.776**    | **0.628**       | **0.008** |
 
+**Warning: Different methods of calculating IoU can produce inconsistent results. Previous work lacked a standardized evaluation approach, so we did not report IoU for cross-method comparison. For internal comparisons among our methods, we used the SLT-Net evaluation code, which computes IoU per frame, averages across each video, and then averages over the entire dataset.**
+## Setup Instructions
+
+### Step 1: Download MoCA-Mask with Precomputed Optical Flow
+```bash
+wget https://zs-vcos.weasoft.com/FMOCA.zip
+```
+If the server is down, download from Google Drive.
+https://drive.google.com/file/d/10D-K2jXZ96BeznXuYcHwom90g6cp_L6Q/view?usp=sharing
+
+Verify file integrity with SHA-512:
+```
+eda88bd52daf0b44e20d5c1c545c3f3759e5368c6101a594396f4b1acf3034f812ee7aa19b3eca9203232aa0af922a2d252feec79914b125ccb2d52cf94829cf
+```
+
+### Step 2: Download and Install SAM-2
+```bash
+git clone https://github.com/facebookresearch/sam2.git
+mv sam2 .sam2
+cd .sam2
+pip3 install -e .
+```
+
+If installation fails, run:
+```bash
+echo -e '[build-system]\nrequires = [\n    "setuptools>=62.3.0,<75.9",\n    "torch>=2.5.1",\n    ]\nbuild-backend = "setuptools.build_meta"' > pyproject.toml
+```
+(See https://github.com/facebookresearch/sam2/issues/611 for more)
+Then run:
+```bash
+pip3 install -e .
+```
+
+Download the checkpoints:
+```bash
+cd checkpoints
+bash download_ckpts.sh
+```
+
+More details: https://github.com/facebookresearch/sam2
+
+### Step 3: Configure and Run
+
+Modify `run.py` to include the following runtime arguments:
+
+- `--video_name`: name of the input video (required)
+- `--log_path`: log file output path (default: `output.log`)
+- `--use_motion_detection`: enable motion detection support
+- `--output_dir`: output directory for processed video (default: `output`)
+- `--positive_prompt`: prompt to guide object detection (default: "an animal or insect being highlighted in blue")
+- `--threshold`: object detection confidence threshold (default: `0.12`)
+- `--use_bgs`: enable background subtraction
+- `--no_back_tracking`: enable forward-only tracking
+- `--momentum`: set optical flow momentum (default: `0`)
+- `--no_mean_sub`: disable mean subtraction in optical flow
+- `--no_negative_prompt`: disable negative prompts in VLM
+- `--box_only`: use only box prompts for SAM2
+
+### Step 4: Evaluation
+
+Open `eval/main_MoCa.m`, update the file paths to match your local setup, and run the script using MATLAB.
+
+For questions, contact: wg25r@student.ubc.ca
 
 ## Testing Visualizations
 

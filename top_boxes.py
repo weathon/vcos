@@ -226,7 +226,7 @@ for idx in tqdm(range(0, len(input_images) - 1)):
             
     points[idx] = this_frame_points
     history_boxes[idx] = boxes
-    box_conf.append(score)
+    box_conf.append(score.cpu())
     video_writer.write(blended)
     past_boxes.append(boxes)
     if len(past_boxes) > 10:
@@ -248,7 +248,7 @@ for i, blended in enumerate(blended_images):
 n = 3
 highest_conf_idxs = []
 
-highest_conf_idxs = np.argsort(box_conf.cpu())[::-1][:n]
+highest_conf_idxs = np.argsort(box_conf)[::-1][:n]
 
 boxes = boxes[highest_conf_idxs]
 points = points[highest_conf_idxs]

@@ -417,3 +417,4 @@ print("F1: ", confusion.get_f1(), "Recall: ", confusion.get_recall(), "Precision
 with open(log_path, "a") as f:
     f.write(f"{video_name},{confusion.get_f1()},{confusion.get_iou()},{confusion.get_recall()},{confusion.get_precision()},{moved}\n")
 
+

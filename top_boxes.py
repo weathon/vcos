@@ -250,7 +250,7 @@ highest_conf_idxs = []
 
 highest_conf_idxs = np.argsort(box_conf)[::-1][:n]
 
-boxes = boxes[highest_conf_idxs]
+history_boxes = history_boxes[highest_conf_idxs]
 points = points[highest_conf_idxs]
     
 inference_state = predictor.init_state(video_path="output")

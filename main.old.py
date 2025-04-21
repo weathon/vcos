@@ -34,7 +34,7 @@ parser.add_argument("--video_name", type=str, required=True, help="Name of the v
 parser.add_argument("--log_path", type=str, default="output.log", help="Path to save the log file")
 parser.add_argument("--use_motion_detection", action="store_true", help="Use motion detection to assist segmentation")
 parser.add_argument("--output_dir", type=str, default="output", help="Directory to save the output video")
-parser.add_argument("--positive_prompt", type=str, default="an animal or insect being highlighted in blue", help="Positive prompt for object detection")
+parser.add_argument("--positive_prompt", type=str, default="an animal or insect being highlighted in red", help="Positive prompt for object detection")
 parser.add_argument("--threshold", type=float, default=0.12, help="Threshold for object detection")
 parser.add_argument("--use_bgs", action="store_true", help="Use background subtraction to assist segmentation")
 parser.add_argument("--no_back_tracking", action="store_true", help="Do not use back tracking for segmentation")
@@ -126,9 +126,49 @@ import numpy as np
 flow_images = sorted(os.listdir(flow_dir+video_name))
 input_images = sorted(os.listdir(img_dir+video_name+"/Frame"))
 frame0 = cv2.imread(os.path.join(img_dir+video_name+"/Frame", input_images[0]))
-video_writer = cv2.VideoWriter("output.avi", cv2.VideoWriter_fourcc(*"XVID"), 5, (frame0.shape[1], frame0.shape[0]))
 from tqdm import tqdm
 from skimage.feature import peak_local_max
+import base64
+import io
+import openai
+
+client = openai.Client()
+
+from pydantic import BaseModel
+from typing import List, Optional
+class Prompts(BaseModel):
+    positive_prompt: str
+    negative_prompt: List[str] = None
+import json
+    
+def get_prompt(images):
+    base64s = []
+    for image in images:
+        image = Image.fromarray(image)
+        buffer = io.BytesIO()
+        image.save(buffer, format="JPEG")
+        image_base64 = base64.b64encode(buffer.getvalue()).decode("utf-8")
+        base64s.append(image_base64)
+    
+    completion = client.beta.chat.completions.parse(
+                model="gpt-4.5-preview",
+                messages=[
+                    {"role": "system", "content": f"Name the highlighted main animal or insect in the image. all lower case, no punctuation. If you cannot see one or you are not sure, just say 'animal or insect' The object might be hard to see, blending in with the envirement; its shape, color, texture, pattern and movement closely resemble its surroundings, enabling it to blend in. Only mention the animal or incest not the envirement or other objects. Describe each with characteristics in 3-4 words, no punctuation. For negative prompt, describe other objects that could be confused with the animal or insect, such as branches."}, 
+                    {
+                        "role": "user",
+                        "content": [
+                            *[{
+                                "type": "image_url",
+                                "image_url": {"url": "data:image/jpeg;base64," + image_base64},
+                            } for image_base64 in base64s],
+                        ],
+                    }                    
+                ],
+                temperature=0.5,
+                response_format=Prompts,
+            )
+    print(completion.choices[0].message.content)
+    return json.loads(completion.choices[0].message.content)
 
 running_dx = None
 running_dy = None
@@ -137,9 +177,12 @@ points = {}
 history_boxes = {}
 first_box = None
 blended_images = []
+original_images = []
 
 _, _, _, _, moved = predict_camera_motion([os.path.join(img_dir, video_name, "Frame", input_images[i]) for i in range(0, len(input_images))])
 bgsub = cv2.createBackgroundSubtractorMOG2()
+
+prompt = None
 for idx in tqdm(range(0, len(input_images) - 1)):
     flow_image = cv2.imread(os.path.join(flow_dir, video_name, flow_images[idx]))
     # read as BGR
@@ -185,16 +228,26 @@ for idx in tqdm(range(0, len(input_images) - 1)):
     # blended = input_image
     # overlay kmeans image?
     if args.use_motion_detection:
-        blended = cv2.addWeighted(input_image, 1, intensity, 0.3, 0)
+        blended = cv2.addWeighted(input_image, 1, intensity, 0.5, 0)
     else:
         blended = input_image
-    blended_images.append(input_image) # try both
+    blended_images.append(cv2.cvtColor(blended, cv2.COLOR_BGR2RGB))
+    original_images.append(cv2.cvtColor(input_image, cv2.COLOR_BGR2RGB))
+    
+prompt_object = get_prompt(blended_images[::len(blended_images)//5])
+prompt = prompt_object["positive_prompt"] + " being highlighted in red"
+negative_prompt = prompt_object["negative_prompt"]
+# partially
+video_writer = cv2.VideoWriter("output.avi", cv2.VideoWriter_fourcc(*"XVID"), 5, (frame0.shape[1], frame0.shape[0]))
 
-    image = Image.fromarray(blended)
+for idx in tqdm(range(0, len(input_images) - 1)):
+    image = blended_images[idx]
+    blended = blended_images[idx]
+    image = Image.fromarray(image)
     if args.no_negative_prompt:
-      text_labels = [[args.positive_prompt]]
+      text_labels = [[prompt]]
     else:
-      text_labels = [[args.positive_prompt, "background", "logo or sign", "plant"]] # add more negative prompts
+      text_labels = [[prompt, "background", "logo or sign", "plant", *negative_prompt]]
     inputs = processor(text=text_labels, images=image, return_tensors="pt").to("cuda")
     with torch.no_grad():
         outputs = model(**inputs)
@@ -223,12 +276,15 @@ for idx in tqdm(range(0, len(input_images) - 1)):
             
     points[idx] = this_frame_points
     history_boxes[idx] = boxes
-    video_writer.write(blended)
+    
+    video_writer.write(cv2.cvtColor(blended, cv2.COLOR_RGB2BGR))
     past_boxes.append(boxes)
-    if len(past_boxes) > 10:
+    if len(past_boxes) > 10: 
         past_boxes.pop(0)
 video_writer.release()
 os.system("ffmpeg -y -i output.avi -c:v libx264 -crf 23 -preset medium -movflags +faststart output.mp4 > /dev/null 2>&1")      
+os.makedirs("gpt", exist_ok=True)
+os.rename("output.mp4", os.path.join("gpt", video_name + ".mp4"))
 
 import shutil
 
@@ -238,8 +294,8 @@ except:
     shutil.rmtree("output")
     os.makedirs("output")
     
-for i, blended in enumerate(blended_images):
-    cv2.imwrite(os.path.join("output", f"{i:05d}.jpg"), blended)
+for i, blended in enumerate(original_images):
+    cv2.imwrite(os.path.join("output", f"{i:05d}.jpg"), cv2.cvtColor(blended, cv2.COLOR_RGB2BGR))
     
 inference_state = predictor.init_state(video_path="output")
 predictor.reset_state(inference_state)
@@ -291,7 +347,7 @@ except:
 #     frame = cv2.imread(os.path.join(frames, frame_name))
 #     cv2.imwrite(os.path.join("output_rev", f"{i:05d}.jpg"), frame)
 
-for i, blended in enumerate(blended_images[::-1]):
+for i, blended in enumerate(original_images[::-1]):
     cv2.imwrite(os.path.join("output_rev", f"{i:05d}.jpg"), blended)
 
 inference_state = predictor.init_state(video_path="output_rev")
@@ -362,8 +418,7 @@ if not args.no_back_tracking:
 gt_path = os.path.join(img_dir, video_name, "GT")
 gt_frames = sorted(os.listdir(gt_path))
 gt_images = [cv2.imread(os.path.join(gt_path, frame)) for frame in gt_frames]
-
-confusion = BinaryConfusion(backend="numpy")
+iou = []
 os.makedirs(f"{args.output_dir}/{video_name}", exist_ok=True)
 for i in range(0, len(gt_images) - 1):
     gt = gt_images[i]
@@ -381,6 +436,10 @@ for i in range(0, len(gt_images) - 1):
         pred_rev = np.zeros_like(gt[:,:,0])
     pred = pred_for | pred_rev
     
+    
+    # closing 30*30 using ellipse
+    kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (30, 30))
+    pred = cv2.morphologyEx(pred.astype(np.uint8), cv2.MORPH_CLOSE, kernel)
     # try:
     #     pred = video_segments[frame_id][1][0]
     # except:
@@ -395,7 +454,10 @@ for i in range(0, len(gt_images) - 1):
     
     pred_rgb = cv2.cvtColor(pred.astype(np.uint8) * 255, cv2.COLOR_GRAY2BGR)
     assert input_frame.shape == gt.shape == pred_rgb.shape, "Shape mismatch {} {} {}".format(input_frame.shape, gt.shape, pred_rgb.shape)
-    # confusion.update(gt[..., 0] > 128, pred_rgb[..., 0] > 128)
+    confusion = BinaryConfusion(backend="numpy")
+    confusion.update(gt[..., 0] > 128, pred_rgb[..., 0] > 128)
+    iou.append(confusion.get_iou())
+    
     # slt = cv2.imread(os.path.join(img_dir, video_name, "Pred", input_images[i - 1].replace("jpg", "png")))
     cv2.imwrite(os.path.join(args.output_dir, video_name, f"{i:05d}.png"), pred_rgb)
     try:
@@ -410,8 +472,9 @@ for i in range(0, len(gt_images) - 1):
     except:
         pass
     
-# res_writter.release()
-print("F1: ", confusion.get_f1(), "Recall: ", confusion.get_recall(), "Precision: ", confusion.get_precision(), "IoU: ", confusion.get_iou())
+# # res_writter.release()
+# print("F1: ", confusion.get_f1(), "Recall: ", confusion.get_recall(), "Precision: ", confusion.get_precision(), "IoU: ", confusion.get_iou())
+print("IoU", np.mean(iou))
 # os.system(f"ffmpeg -y -i {video_name}.avi -c:v libx264 -crf 23 -preset medium -movflags +faststart {video_name}.mp4 > /dev/null 2>&1")
 
 with open(log_path, "a") as f:

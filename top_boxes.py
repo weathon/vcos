@@ -257,7 +257,7 @@ predictor.reset_state(inference_state)
 if not args.box_only:
   for idx in highest_conf_idxs:
       ann_frame_idx = idx
-      point = points[idx]
+      point = points[int(idx)]
       if len(point) > 0:
           pointi = np.array([point], dtype=np.float32)
           labels = np.array([1], np.int32)
@@ -271,7 +271,7 @@ if not args.box_only:
     
 for idx in highest_conf_idxs:
     ann_frame_idx = idx
-    box = history_boxes[idx]
+    box = history_boxes[int(idx)]
     if box.shape[0] > 0:
         box = box.cpu().numpy()
         _, out_obj_ids, out_mask_logits = predictor.add_new_points_or_box(
@@ -332,7 +332,7 @@ if not args.box_only:
   for idx in highest_conf_idxs:
       # ann_frame_idx = len(frames) - idx - 1 frame is the file name
       ann_frame_idx = len(frame_images) - idx - 1 
-      point = points[idx]
+      point = points[int(idx)]
       if len(point) > 0:
           pointi = np.array([point], dtype=np.float32)
           labels = np.array([1], np.int32)
@@ -346,7 +346,7 @@ if not args.box_only:
     
 for idx in highest_conf_idxs:
     ann_frame_idx = len(frame_images) - idx - 1 
-    box = history_boxes[idx]
+    box = history_boxes[int(idx)]
     if box.shape[0] > 0:
         box = box.cpu().numpy()
         _, out_obj_ids, out_mask_logits = predictor.add_new_points_or_box(

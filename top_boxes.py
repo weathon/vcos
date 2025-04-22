@@ -208,7 +208,7 @@ for idx in tqdm(range(0, len(input_images) - 1)):
     boxes, scores, labels = result["boxes"], result["scores"], result["labels"]
     boxes, scores = boxes[labels == 0], scores[labels == 0]
     this_frame_points = []
-    score = -1
+    score = torch.tensor(-1)
     if boxes.shape[0] > 0:
         boxes = boxes[scores == scores.max()]
         score = scores[scores == scores.max()]
@@ -226,7 +226,7 @@ for idx in tqdm(range(0, len(input_images) - 1)):
             
     points[idx] = this_frame_points
     history_boxes[idx] = boxes
-    box_conf.append(score.cpu())
+    box_conf.append(score.cpu().item())
     video_writer.write(blended)
     past_boxes.append(boxes)
     if len(past_boxes) > 10:
@@ -246,8 +246,9 @@ for i, blended in enumerate(blended_images):
     cv2.imwrite(os.path.join("output", f"{i:05d}.jpg"), blended)
 
 n = 3
-highest_conf_idxs = []
 
+
+n = min(3, len(box_conf))
 highest_conf_idxs = np.argsort(box_conf)[::-1][:n]
 
     

@@ -250,14 +250,12 @@ highest_conf_idxs = []
 
 highest_conf_idxs = np.argsort(box_conf)[::-1][:n]
 
-history_boxes = history_boxes[highest_conf_idxs]
-points = points[highest_conf_idxs]
     
 inference_state = predictor.init_state(video_path="output")
 predictor.reset_state(inference_state)
 
 if not args.box_only:
-  for idx in points.keys():
+  for idx in highest_conf_idxs:
       ann_frame_idx = idx
       point = points[idx]
       if len(point) > 0:
@@ -271,7 +269,7 @@ if not args.box_only:
               labels=labels,
           )
     
-for idx in history_boxes.keys():
+for idx in highest_conf_idxs:
     ann_frame_idx = idx
     box = history_boxes[idx]
     if box.shape[0] > 0:
@@ -317,7 +315,7 @@ for idx in points.keys():
     if len(point) > 0:
         frame_images[ann_frame_idx] = cv2.circle(frame_images[ann_frame_idx], point[0], 5, (0, 255, 0), -1)
     
-for idx in history_boxes.keys():
+for idx in highest_conf_idxs:
     ann_frame_idx = len(frame_images) - idx - 1
     box = history_boxes[idx].cpu().numpy()
     if box.shape[0] > 0:
@@ -331,7 +329,7 @@ for idx in history_boxes.keys():
 
 
 if not args.box_only:
-  for idx in points.keys():
+  for idx in highest_conf_idxs:
       # ann_frame_idx = len(frames) - idx - 1 frame is the file name
       ann_frame_idx = len(frame_images) - idx - 1 
       point = points[idx]
@@ -346,7 +344,7 @@ if not args.box_only:
               labels=labels,
           )
     
-for idx in history_boxes.keys():
+for idx in highest_conf_idxs:
     ann_frame_idx = len(frame_images) - idx - 1 
     box = history_boxes[idx]
     if box.shape[0] > 0:

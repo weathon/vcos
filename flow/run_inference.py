@@ -3,8 +3,8 @@ import glob as gb
 
 
 
-data_path = '/home/wg25r/fastdata/fullmoca/'
-rgb_path = data_path + 'MoCA-Video-Test'  
+data_path = "/content/MoCA_Video"
+rgb_path = data_path + 'TrainDataset_per_sq'  
 # '/JPEGImages/480p' for DAVIS-related datasets and '/JPEGImages' for others
 
 gap = [1]

@@ -138,12 +138,12 @@ history_boxes = {}
 first_box = None
 blended_images = []
 
-_, _, _, _, moved = predict_camera_motion([os.path.join(img_dir, video_name, "Frame", input_images[i]) for i in range(0, len(input_images))])
+_, _, _, _, moved = predict_camera_motion([os.path.join(img_dir, video_name, "Imgs", input_images[i]) for i in range(0, len(input_images))])
 bgsub = cv2.createBackgroundSubtractorMOG2()
 for idx in tqdm(range(0, len(input_images) - 1)):
     flow_image = cv2.imread(os.path.join(flow_dir, video_name, flow_images[idx]))
     # read as BGR
-    input_image = cv2.imread(os.path.join(img_dir+video_name+"/Frame", input_images[idx]), cv2.IMREAD_COLOR)
+    input_image = cv2.imread(os.path.join(img_dir+video_name+"/Imgs", input_images[idx]), cv2.IMREAD_COLOR)
     bgsub.apply(input_image)
     flow_image = cv2.resize(flow_image, (input_image.shape[1], input_image.shape[0]))
     # convert flow into dx and dy
@@ -280,7 +280,7 @@ for out_frame_idx, out_obj_ids, out_mask_logits in predictor.propagate_in_video(
 
 
 # do it again but on a reversed video
-frames = video_path=img_dir+video_name+"/Frame"
+frames = video_path=img_dir+video_name+"/Imgs"
 try:
     os.makedirs("output_rev")
 except:
@@ -367,7 +367,7 @@ confusion = BinaryConfusion(backend="numpy")
 os.makedirs(f"{args.output_dir}/{video_name}", exist_ok=True)
 for i in range(0, len(gt_images) - 1):
     gt = gt_images[i]
-    # input_frame = cv2.imread(os.path.join(img_dir, video_name, "Frame", input_images[i]))
+    # input_frame = cv2.imread(os.path.join(img_dir, video_name, "Imgs", input_images[i]))
     input_frame = blended_images[i]
     frame_id = int(gt_frames[i].replace(".png",""))
     try:

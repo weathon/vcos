@@ -59,8 +59,8 @@ class ImgPair(Dataset):
         self.gap = gap
         self.reverse = reverse
 
-        images = glob.glob(os.path.join(self.data_dir,"Frame", '*.png')) + \
-                 glob.glob(os.path.join(self.data_dir,"Frame", '*.jpg'))
+        images = glob.glob(os.path.join(self.data_dir,"Imgs", '*.png')) + \
+                 glob.glob(os.path.join(self.data_dir,"Imgs", '*.jpg'))
         self.images = sorted(images)
         self.images_ = self.images[:-gap]
 

@@ -124,8 +124,8 @@ import pylab
 import numpy as np
 
 flow_images = sorted(os.listdir(flow_dir+video_name))
-input_images = sorted(os.listdir(img_dir+video_name+"/Frame"))
-frame0 = cv2.imread(os.path.join(img_dir+video_name+"/Frame", input_images[0]))
+input_images = sorted(os.listdir(img_dir+video_name+"/Imgs"))
+frame0 = cv2.imread(os.path.join(img_dir+video_name+"/Imgs", input_images[0]))
 video_writer = cv2.VideoWriter("output.avi", cv2.VideoWriter_fourcc(*"XVID"), 5, (frame0.shape[1], frame0.shape[0]))
 from tqdm import tqdm
 from skimage.feature import peak_local_max

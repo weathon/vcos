@@ -57,8 +57,8 @@ except:
   IN_COLAB = False
   
 if IN_COLAB:
-    flow_dir = "/content/MoCA_Video/FlowImages_gap1"
-    img_dir = "/content/MoCA_Video/TrainDataset_per_sq" #"./fullmoca/MoCA-Video-Test/"
+    flow_dir = "/content/MoCA_Video/FlowImages_gap1/"
+    img_dir = "/content/MoCA_Video/TrainDataset_per_sq/" #"./fullmoca/MoCA-Video-Test/"
     sam2_checkpoint = "/content/.sam2/checkpoints/sam2.1_hiera_small.pt"
     
 else:

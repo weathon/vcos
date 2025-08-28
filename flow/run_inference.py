@@ -3,7 +3,7 @@ import glob as gb
 
 
 
-data_path = "/content/MoCA_Video"
+data_path = "/content/MoCA_Video/"
 rgb_path = data_path + 'TrainDataset_per_sq'  
 # '/JPEGImages/480p' for DAVIS-related datasets and '/JPEGImages' for others
 

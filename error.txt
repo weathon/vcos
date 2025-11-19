@@ -3529,3 +3529,6 @@ error code: 2
 error when processing moth with threshold qwen
 error code: 2
 
+error when processing black_cat_1 with threshold qwen
+error code: 2
+

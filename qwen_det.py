@@ -75,7 +75,7 @@ def det_(pil_blended, flow):
                             "content": [
                             {
                                 "type": "text",
-                                "text": "You will get two images, one is a highlighted normal image, and another is an optical flow image. Please find a camouflaged animal/insect in this image and provide the bounding box. It MIGHT be highlighted in blue in the original image and show up on the flow map. If you cannot see it, return an empty list; do NOT return anything else as 'not found'. But the thing is definitely there, so you should be able to find it. If you cannot find it in original image, use the flow map to find the place moved the most. Note that not all moving parts are the target, only the animal itself and not shadows or reflections."
+                                "text": "You will get two images, one is a highlighted normal image, and another is an optical flow image. Please find a camouflaged animal/insect in this image and provide the bounding box. It MIGHT be highlighted in blue in the original image and show up on the flow map. If you cannot see it, return an empty list; do NOT return anything else as 'not found'. But the thing is definitely there, so you should be able to find it. If you cannot find it in original image, use the flow map to find the place moved the most. Note that not all moving objects are the target, only the animal itself and not shadows or reflections or non animal objects. Compare and contrast both images carefully to find the camouflaged animal/insect. " 
                             },
                             {
                                 "type": "image_url", 
